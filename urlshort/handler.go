@@ -28,6 +28,7 @@ func buildMap(pathUrls []pathUrl) map[string]string {
 	return pathsToUrls
 }
 
+//YAMLHandler is func
 func YAMLHandler(yamlBytes []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	pathUrls, err := parseYaml(yamlBytes)
 	if err != nil {
@@ -37,6 +38,7 @@ func YAMLHandler(yamlBytes []byte, fallback http.Handler) (http.HandlerFunc, err
 	return MapHandler(pathsToUrls, fallback), nil
 }
 
+//MapHandler is func
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
