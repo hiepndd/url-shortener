@@ -5,6 +5,6 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Use: "urlshorten",
-	Short: "UrlShorten is an http.Handler that forwards paths to other URLs"
+	Use:   "urlshorten",
+	Short: "UrlShorten is an http.Handler that forwards paths to other URLs",
 }
