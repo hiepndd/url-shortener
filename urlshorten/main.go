@@ -3,11 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"git.dwarvesf.com/url-shortener/urlshorten/cmd"
 	"git.dwarvesf.com/url-shortener/urlshorten/db"
-	"github.com/mitchellh/go-homedir"
 )
 
 func must(err error) {
@@ -18,8 +16,6 @@ func must(err error) {
 }
 
 func main() {
-	home, _ := homedir.Dir()
-	dbPath := filepath.Join(home, "urlshorten.db")
-	must(db.Init(dbPath))
+	must(db.Init())
 	must(cmd.RootCmd.Execute())
 }

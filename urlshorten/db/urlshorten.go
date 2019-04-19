@@ -1,43 +1,45 @@
 package db
 
 import (
-	"time"
+	"fmt"
 
-	"github.com/boltdb/bolt"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-var urlshortenBucket = []byte("urlshorten")
-
-var db *bolt.DB
+var database *gorm.DB
 
 // URLShorten is struct contain infor of specific url
 type URLShorten struct {
-	Key   string
-	Value string
+	gorm.Model
+	Key   string `gorm:"not null"`
+	Value string `gorm:"not null"`
 }
 
 //Init is function create a DB
-func Init(dbPath string) error {
-	var err error
-	db, err := bolt.Open(dbPath, 0600, &bolt.Options{Timeout: 1 * time.Second})
+func Init() error {
+	database, err := gorm.Open("mysql", "root:123456@/urlshorten?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		return err
 	}
-	return db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(urlshortenBucket)
-		return err
-	})
+	defer database.Close()
+	database.AutoMigrate(&URLShorten{})
+
+	return nil
 
 }
 
 // AddURLShorten is func add url to DB
 func AddURLShorten(key, value string) error {
-	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(urlshortenBucket)
-		return b.Put([]byte(key), []byte(value))
-	})
+
+	urlshorten := URLShorten{Key: key, Value: value}
+	//urlshorten := URLShorten{}
+
+	err := database.Create(urlshorten).Error
+
 	if err != nil {
 		return err
 	}
+	fmt.Println("Hello")
 	return nil
 }
