@@ -35,7 +35,7 @@ func AddURLShorten(key, value string) error {
 	urlshorten := URLShorten{Key: key, Value: value}
 	//urlshorten := URLShorten{}
 
-	err := database.Create(urlshorten).Error
+	err := database.Create(&urlshorten).Error
 
 	if err != nil {
 		return err
