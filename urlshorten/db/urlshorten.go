@@ -1,8 +1,6 @@
 package db
 
 import (
-	"fmt"
-
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -18,11 +16,12 @@ type URLShorten struct {
 
 //Init is function create a DB
 func Init() error {
-	database, err := gorm.Open("mysql", "root:123456@/urlshorten?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open("mysql", "root:123456@/urlshorten?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		return err
 	}
-	defer database.Close()
+	//defer db.Close()
+	database = db
 	database.AutoMigrate(&URLShorten{})
 
 	return nil
@@ -33,13 +32,30 @@ func Init() error {
 func AddURLShorten(key, value string) error {
 
 	urlshorten := URLShorten{Key: key, Value: value}
-	//urlshorten := URLShorten{}
-
 	err := database.Create(&urlshorten).Error
 
 	if err != nil {
 		return err
 	}
-	fmt.Println("Hello")
+	return nil
+}
+
+func AllURLShorten() ([]URLShorten, error) {
+	listURL := []URLShorten{}
+	err := database.Find(&listURL).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return listURL, nil
+}
+
+func DeleteURLShorten(key string) error {
+	listURL := URLShorten{}
+	database.Where("key=?", key).First(&listURL)
+	err := database.Delete(&listURL).Error
+	if err != nil {
+		return err
+	}
 	return nil
 }
