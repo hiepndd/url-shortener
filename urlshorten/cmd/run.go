@@ -13,9 +13,8 @@ var runCmd = &cobra.Command{
 	Short: "Run HTTP server on a given port",
 	Run: func(cmd *cobra.Command, args []string) {
 		run, _ := cmd.Flags().GetString("port")
-		fmt.Println(run)
 		mux := defaultMux()
-		maps := buildMap()
+		maps, _ := db.AllURLYamlFile()
 		handler := mapHandler(maps, mux)
 		newURL := ":" + run
 		fmt.Printf("Starting the server on %s", newURL)
@@ -37,16 +36,6 @@ func defaultMux() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", helloworld)
 	return mux
-}
-
-func buildMap() map[string]string {
-	pathToUrls := make(map[string]string)
-	list, _ := db.AllURLShorten()
-	for _, path := range list {
-		pathToUrls[path.Key] = path.Value
-	}
-	return pathToUrls
-
 }
 
 func mapHandler(pathToUrls map[string]string, fallback http.Handler) http.HandlerFunc {

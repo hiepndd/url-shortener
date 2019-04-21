@@ -11,7 +11,7 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all urlshorten in DB.",
 	Run: func(cmd *cobra.Command, args []string) {
-		list, err := db.AllURLShorten()
+		list, err := db.AllURLYamlFile()
 		if err != nil {
 			fmt.Println("Something went wrong", err)
 			return
@@ -21,8 +21,8 @@ var listCmd = &cobra.Command{
 			fmt.Println("You don't have any urlshorten")
 		}
 
-		for _, value := range list {
-			fmt.Printf("%s - %s - %d\n", value.Key, value.Value, value.Count)
+		for key, value := range list {
+			fmt.Printf("%s - %s\n", key, value)
 		}
 	},
 }

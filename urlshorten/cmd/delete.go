@@ -12,7 +12,7 @@ var deleteCmd = &cobra.Command{
 	Short: "Remove a urlshorten from the list",
 	Run: func(cmd *cobra.Command, args []string) {
 		key, _ := cmd.Flags().GetString("delete")
-		err := db.DeleteURLShorten(key)
+		err := db.DeteleURLYamlFile(key)
 		if err != nil {
 			fmt.Println("Something went wrong", err)
 			return

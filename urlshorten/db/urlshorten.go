@@ -1,16 +1,19 @@
 package db
 
 import (
-	"errors"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	yaml "gopkg.in/yaml.v2"
 )
 
 var (
 	database     *gorm.DB
 	currentValue int
+	data         map[string]string
+	list         []PathURL
 )
 
 // URLShorten is struct contain infor of specific url
@@ -21,8 +24,26 @@ type URLShorten struct {
 	Count int
 }
 
+type PathURL struct {
+	Path string `yaml:"path"`
+	URL  string `yaml:"url"`
+}
+
 //Init is function create a DB
 func Init() error {
+	yamlFile, err := ioutil.ReadFile("./db.yaml")
+	if err != nil {
+		return err
+	}
+	listURL, err := parseYaml(yamlFile)
+	list = listURL
+	if err != nil {
+		return err
+	}
+	maps := buildMap(listURL)
+
+	data = maps
+
 	db, err := gorm.Open("mysql", "root:123456@/urlshorten?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		return err
@@ -35,19 +56,38 @@ func Init() error {
 
 }
 
-// AddURLShorten is func add url to DB
-func AddURLShorten(key, value string) error {
-
-	urlshorten := URLShorten{Key: key, Value: value}
-	if !database.First(&urlshorten).RecordNotFound() {
-		return errors.New("record already exist")
-	}
-	err := database.Create(&urlshorten).Error
+func AddURLToYamlFile(key, value string) error {
+	data[key] = value
+	url := PathURL{Path: key, URL: value}
+	list = append(list, url)
+	convertYaml, err := yaml.Marshal(&list)
 	if err != nil {
-		return err
+		return nil
+	}
+	err = ioutil.WriteFile("./db.yaml", convertYaml, 0644)
+	if err != nil {
+		return nil
+	}
+	return nil
+}
+
+func parseYaml(data []byte) ([]PathURL, error) {
+	var pathUrls []PathURL
+	err := yaml.Unmarshal(data, &pathUrls)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return pathUrls, nil
+}
+
+func buildMap(pathURL []PathURL) map[string]string {
+	pathToUrls := make(map[string]string)
+	for _, path := range pathURL {
+		pathToUrls[path.Path] = path.URL
+	}
+
+	return pathToUrls
 }
 
 // AllURLShorten is func get list url from DB
@@ -61,6 +101,21 @@ func AllURLShorten() ([]URLShorten, error) {
 	return listURL, nil
 }
 
+func AllURLYamlFile() (map[string]string, error) {
+	file, err := ioutil.ReadFile("./db.yaml")
+	if err != nil {
+		return nil, err
+	}
+
+	urls, err := parseYaml(file)
+
+	if err != nil {
+		return nil, err
+	}
+	result := buildMap(urls)
+	return result, nil
+}
+
 //DeleteURLShorten is func delete a specific url
 func DeleteURLShorten(key string) error {
 	listURL := URLShorten{}
@@ -70,6 +125,33 @@ func DeleteURLShorten(key string) error {
 		return err
 	}
 	return nil
+}
+
+func changeSruct(key string) []PathURL {
+	result := make([]PathURL, len(list)-1)
+
+	for index, value := range list {
+		if value.Path != key {
+			result[index] = list[index]
+		}
+	}
+	return result
+
+}
+
+func DeteleURLYamlFile(key string) error {
+	delete(data, key)
+	list = changeSruct(key)
+	convertYaml, err := yaml.Marshal(&list)
+	if err != nil {
+		return nil
+	}
+	err = ioutil.WriteFile("./db.yaml", convertYaml, 0644)
+	if err != nil {
+		return nil
+	}
+	return nil
+
 }
 
 // Count is func cout how many time url redirect
