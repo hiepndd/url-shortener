@@ -13,11 +13,6 @@ var addCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		append, _ := cmd.Flags().GetString("append")
 		url, _ := cmd.Flags().GetString("url")
-		//err := db.AddURLShorten(append, url)
-		// if err != nil {
-		// 	fmt.Println("Something went wrong:", err)
-		// 	return
-		// }
 		err := db.AddURLToYamlFile(append, url)
 		if err != nil {
 			fmt.Println("Something went wrong:", err)

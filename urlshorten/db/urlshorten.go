@@ -1,29 +1,17 @@
 package db
 
 import (
-	"fmt"
 	"io/ioutil"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	yaml "gopkg.in/yaml.v2"
 )
 
 var (
-	database     *gorm.DB
-	currentValue int
-	data         map[string]string
-	list         []PathURL
+	data map[string]string
+	list []PathURL
 )
 
-// URLShorten is struct contain infor of specific url
-type URLShorten struct {
-	gorm.Model
-	Key   string `gorm:"not null;unique"`
-	Value string `gorm:"not null"`
-	Count int
-}
-
+//PathURL is struct contain infor of specific url
 type PathURL struct {
 	Path string `yaml:"path"`
 	URL  string `yaml:"url"`
@@ -43,19 +31,11 @@ func Init() error {
 	maps := buildMap(listURL)
 
 	data = maps
-
-	db, err := gorm.Open("mysql", "root:123456@/urlshorten?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		return err
-	}
-	//defer db.Close()
-	database = db
-	database.AutoMigrate(&URLShorten{})
-
 	return nil
 
 }
 
+// AddURLToYamlFile is func add a url to file yaml
 func AddURLToYamlFile(key, value string) error {
 	data[key] = value
 	url := PathURL{Path: key, URL: value}
@@ -90,17 +70,7 @@ func buildMap(pathURL []PathURL) map[string]string {
 	return pathToUrls
 }
 
-// AllURLShorten is func get list url from DB
-func AllURLShorten() ([]URLShorten, error) {
-	listURL := []URLShorten{}
-	err := database.Find(&listURL).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return listURL, nil
-}
-
+//AllURLYamlFile is func list all url from file yaml
 func AllURLYamlFile() (map[string]string, error) {
 	file, err := ioutil.ReadFile("./db.yaml")
 	if err != nil {
@@ -116,17 +86,6 @@ func AllURLYamlFile() (map[string]string, error) {
 	return result, nil
 }
 
-//DeleteURLShorten is func delete a specific url
-func DeleteURLShorten(key string) error {
-	listURL := URLShorten{}
-	database.Where("key=?", key).First(&listURL)
-	err := database.Delete(&listURL).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func changeSruct(key string) []PathURL {
 	result := make([]PathURL, len(list)-1)
 
@@ -139,6 +98,7 @@ func changeSruct(key string) []PathURL {
 
 }
 
+//DeteleURLYamlFile is func delete a url from file yaml
 func DeteleURLYamlFile(key string) error {
 	delete(data, key)
 	list = changeSruct(key)
@@ -150,21 +110,6 @@ func DeteleURLYamlFile(key string) error {
 	if err != nil {
 		return nil
 	}
-	return nil
-
-}
-
-// Count is func cout how many time url redirect
-func Count(value string) error {
-	tx := database.Begin()
-	tx.Raw("SELECT `count` FROM url_shortens WHERE `value` = ? LIMIT 1 FOR UPDATE").Row().Scan(&currentValue)
-	fmt.Println(currentValue)
-	currentValue++
-	err := tx.Exec("UPDATE url_shortens SET `count` = ? WHERE `value` = ? LIMIT 1", currentValue, value).Error
-	if err != nil {
-		return nil
-	}
-	tx.Commit()
 	return nil
 
 }
