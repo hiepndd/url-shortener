@@ -53,6 +53,10 @@ func mapHandler(pathToUrls map[string]string, fallback http.Handler) http.Handle
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		if dest, ok := pathToUrls[path]; ok {
+			err := db.Count(pathToUrls[path])
+			if err != nil {
+				fmt.Println(err)
+			}
 			http.Redirect(w, r, dest, http.StatusFound)
 			return
 		}

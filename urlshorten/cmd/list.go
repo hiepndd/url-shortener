@@ -22,7 +22,7 @@ var listCmd = &cobra.Command{
 		}
 
 		for _, value := range list {
-			fmt.Printf("%s - %s", value.Key, value.Value)
+			fmt.Printf("%s - %s - %d\n", value.Key, value.Value, value.Count)
 		}
 	},
 }
