@@ -1,7 +1,6 @@
 package db
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/jinzhu/gorm"
@@ -39,9 +38,6 @@ func Init() error {
 func AddURLShorten(key, value string) error {
 
 	urlshorten := URLShorten{Key: key, Value: value}
-	if !database.First(&urlshorten).RecordNotFound() {
-		return errors.New("record already exist")
-	}
 	err := database.Create(&urlshorten).Error
 	if err != nil {
 		return err
